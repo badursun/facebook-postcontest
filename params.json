@@ -1,6 +1,6 @@
 {
   "name": "Facebook Post Contents",
   "tagline": "facebook, contest",
-  "body": "### Welcome to Facebook Post Contest Script Page.\r\n\r\n### Authors and Contributors\r\nYou can click to @badursun send message to author.\r\n\r\n### Support or Contact\r\nHaving trouble with Pages? Check out our [documentation]",
+  "body": "### Welcome to Facebook Post Contest Script Page.\r\nChoose a user review by the Facebook contest. \"Graph API\" data received by direct printing. A random user is selected.\r\n\r\n### Requirements\r\nThe only thing you need one Facebook Application ID {APP_ID} number. It does not require any special data.\r\n\r\n### Authors and Contributors\r\nYou can click to @badursun send message to author.\r\n\r\n### Support or Contact\r\nHaving trouble with Pages? Check out our [documentation]",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
