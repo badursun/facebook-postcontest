@@ -4,7 +4,6 @@ var TotalContestUser = 1;
 var NextPageLink = "";
 var ParsebleData = {};
 var LoopCount = 0;
-var checkLoginState;
 
 /*
     Document Ready Process
@@ -13,40 +12,43 @@ $(document).ready(function() {
     $.ajaxSetup({
         cache: true
     });
-    $.getScript('https://connect.facebook.net/tr_TR/sdk.js', function() {
-        FB.init({
-            appId: '1164335503650956',
-            cookie: true,
-            xfbml: true,
-            version: 'v2.6'
+    try {
+        $.getScript('https://connect.facebook.net/tr_TR/sdk.js', function() {
+            FB.init({
+                appId: '1164335503650956',
+                cookie: true,
+                xfbml: true,
+                version: 'v2.6'
+            });
+
+            $('#loginbutton,#feedbutton').removeAttr('disabled');
+
+            FB.getLoginStatus(function(response) {
+                if (response.status === 'connected') {
+                    $.LoadingOverlay("show");
+                    var accessToken = response.authResponse.accessToken;
+                    console.log("access_token: " + accessToken);
+
+                    access_token = accessToken;
+
+                    if (access_token == "") {
+                        getAccessToken();
+                    }
+                    if (post_id == "") {
+                        getPagePostID();
+                    }
+                    if (access_token == "" || post_id == "") {
+                        $("#sonuclar").html("Gerekli Bilgiler Girilmedi !");
+                        $.LoadingOverlay("hide");
+                    } else {
+                        getJsonFromAPI();
+                    }
+                }
+            });
         });
+    }catch(err) {
 
-        $('#loginbutton,#feedbutton').removeAttr('disabled');
-
-        FB.getLoginStatus(function(response) {
-            if (response.status === 'connected') {
-                $.LoadingOverlay("show");
-                var accessToken = response.authResponse.accessToken;
-                console.log("access_token: " + accessToken);
-
-                access_token = accessToken;
-
-                if (access_token == "") {
-                    getAccessToken();
-                }
-                if (post_id == "") {
-                    getPagePostID();
-                }
-                if (access_token == "" || post_id == "") {
-                    $("#sonuclar").html("Gerekli Bilgiler Girilmedi !");
-                    $.LoadingOverlay("hide");
-                } else {
-                    getJsonFromAPI();
-                }
-            }
-        });
-    });
-
+    }
 });
 
 /*
@@ -156,4 +158,12 @@ function SelectAnUser() {
     $("#rndks").html(SelectRandomNumber);
     $("#User" + SelectRandomNumber).addClass("selected");
     $.LoadingOverlay("hide");
+
+    /*
+    FB.ui({
+        method: 'feed',
+        link: '',
+        caption: 'Kazanan Yarışmacı xxxx',
+    }, function(response) {});
+    */
 }
