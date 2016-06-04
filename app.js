@@ -1,34 +1,56 @@
-var access_token = "EAACEdEose0cBAFYncGZAU7SVeFKL1OZCcgGWvhvnWK5xYDX5NNWxGTDo5YbVjs3Q9kofobpbx1HQEBvZCmYgQQaJTgpt2Lrg7cA92PPLjIv1njsvbaLqW5AnPIfnky5qBqHubZCimbYp36ZAQdZAFxqyNysPgQnQaSr9tmKLFcINVqFZC1dYTsRxpjWWeG1MNMZD";
-var post_id = "883580631770549";
-var KatilimciSayisi = 0;
+var access_token = "";
+var post_id = "";
+var TotalContestUser = 1;
+var NextPageLink = "";
+var ParsebleData = {};
+var LoopCount = 0;
+var checkLoginState;
 
+/*
+    Document Ready Process
+*/
 $(document).ready(function() {
     $.ajaxSetup({
         cache: true
     });
-    $.getScript('//connect.facebook.net/en_US/sdk.js', function() {
+    $.getScript('https://connect.facebook.net/tr_TR/sdk.js', function() {
         FB.init({
             appId: '150550038652128',
-            version: 'v2.6' // or v2.0, v2.1, v2.2, v2.3
+            cookie: true,
+            xfbml: true,
+            version: 'v2.6'
         });
-        $('#loginbutton,#feedbutton').removeAttr('disabled');
-        FB.getLoginStatus(updateStatusCallback);
-    });
 
-    if (access_token == "") {
-        getAccessToken();
-    }
-    if (post_id == "") {
-        getPagePostID();
-    }
-    if (access_token == "" || post_id == "") {
-        $("#sonuclar").html("Gerekli Bilgiler Girilmedi !");
-    } else {
-        getJsonFromAPI();
-    }
+        $('#loginbutton,#feedbutton').removeAttr('disabled');
+
+        FB.getLoginStatus(function(response) {
+            if (response.status === 'connected') {
+                $.LoadingOverlay("show");
+                var accessToken = response.authResponse.accessToken;
+                console.log("access_token: " + accessToken);
+
+                access_token = accessToken;
+
+                if (access_token == "") {
+                    getAccessToken();
+                }
+                if (post_id == "") {
+                    getPagePostID();
+                }
+                if (access_token == "" || post_id == "") {
+                    $("#sonuclar").html("Gerekli Bilgiler Girilmedi !");
+                } else {
+                    getJsonFromAPI();
+                }
+            }
+        });
+    });
 
 });
 
+/*
+    Get Access Token From Facebook
+*/
 function getAccessToken() {
     var answer = prompt("Erişim Jetonunu Girin", "");
 
@@ -37,14 +59,20 @@ function getAccessToken() {
     }
 }
 
+/*
+    Request Facebook PostID  
+*/
 function getPagePostID() {
-    var answer = prompt("Post ID Girin", "");
+    var answer = prompt("Post ID Girin", "882918638503415");
 
     if (answer != null) {
         post_id = answer;
     }
 }
 
+/*
+  Time converter  
+*/
 function timeAgo(time) {
     var date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
         diff = (((new Date()).getTime() - date.getTime()) / 1000),
@@ -64,20 +92,67 @@ function timeAgo(time) {
         day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
 }
 
-function getJsonFromAPI() {
-    $("#sonuclar").html("<h4>Çekilişe Katılanlar ve Mesajları</h4>");
-    var APIBaseURL = "https://graph.facebook.com/v2.6/" + post_id + "?fields=comments&access_token=" + access_token + "";
-    console.log('Facebook´a Bağlanıyor.');
-    $.getJSON(APIBaseURL, function(datax) {
-        console.log('Data Alınıyor.');
-        $.each(datax.comments.data, function(key, val) {
-            $("#sonuclar").append('<div class="row" id="User' + KatilimciSayisi + '"><div class="col-lg-2 col-md-2"><strong>' + val.from.name + '</strong></div><div class="col-lg-2 col-md-2">' + timeAgo(val.created_time) + '</div><div class="col-lg-8 col-md-8">' + val.message + '</div></div>');
-            KatilimciSayisi++;
+/*
+  Load JSON From API  
+*/
+var LoadJson = function(URL) {
+    $.getJSON(URL, function(datax) {
+        if (LoopCount == 0) {
+            NextPageLink = datax.comments.paging.next;
+        } else {
+            NextPageLink = datax.paging.next;
+
+            if (typeof(NextPageLink) == "undefined") {
+                NextPageLink = "";
+            }
+        }
+        console.log(NextPageLink);
+
+        if (LoopCount == 0) { ParsebleData = datax.comments.data } else { ParsebleData = datax.data }
+        $.each(ParsebleData, function(key, val) {
+            $("#sonuclar").append('<div class="row" id="User' + TotalContestUser + '"><div class="col-lg-2 col-md-2"><strong>' + TotalContestUser + ') ' + val.from.name + '</strong></div><div class="col-lg-2 col-md-2">' + timeAgo(val.created_time) + '</div><div class="col-lg-8 col-md-8">' + val.message + '</div></div>');
+            TotalContestUser++;
         });
 
-        $("#User" + Math.floor(Math.random() * KatilimciSayisi) ).css("background-color","#F3C5C2");
+    }).success(function(data) {
+        if (NextPageLink !== "") {
+            LoopCount++;
+            LoadJson(NextPageLink);
+        } else {
+            SelectAnUser();
+        }
     }).error(function(data) {
         var gelenJson = jQuery.parseJSON(data.responseText);
         $("#sonuclar").html("<strong style=color:red>Hata Oluştu.</strong><br /> Hata:" + gelenJson.error.message);
     });
+}
+
+/*
+  JSON Request INIT.  
+*/
+function getJsonFromAPI() {
+    $("#sonuclar").html('<h4 id="reset">Çekilişe Katılanlar ve Mesajları - Seçilen Kişi: <span id="rndks">?</span> Numara</h4>');
+    var APIBaseURL = "https://graph.facebook.com/v2.6/" + post_id + "?pretty=1&fields=comments&access_token=" + access_token + "";
+    console.log('Facebook´a Bağlanıyor.');
+    console.log('Data Alınıyor.');
+    $("#reset").click(function() {
+        SelectAnUser();
+    })
+    LoadJson(APIBaseURL);
+}
+
+/*
+  Select 1 User  
+*/
+function SelectAnUser() {
+    $("div.row").each(function(index) {
+        $(this).removeClass("selected");
+    });
+
+    console.log('Katılımcı Seçiliyor...');
+    var SelectRandomNumber = Math.floor(Math.random() * TotalContestUser);
+    console.log(SelectRandomNumber + '. Numaralı Kişi Seçildi.');
+    $("#rndks").html(SelectRandomNumber);
+    $("#User" + SelectRandomNumber).addClass("selected");
+    $.LoadingOverlay("hide");
 }

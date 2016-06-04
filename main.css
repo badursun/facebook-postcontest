@@ -1,9 +1,22 @@
-body{
-  font-size:12px;
-  font-family: 'Oswald', sans-serif;
-  font-weight:300;
+body {
+    font-size: 12px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 300;
 }
-h4{
-  font-size:16px;
-  font-weight:bold;
+
+h4 {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+div.row:nth-child(even) {
+    background: #CCC
+}
+
+div.row:nth-child(odd) {
+    background: #FFF
+}
+
+.selected {
+    background-color: #F3C5C2 !important
 }
