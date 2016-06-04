@@ -15,7 +15,7 @@ $(document).ready(function() {
     });
     $.getScript('https://connect.facebook.net/tr_TR/sdk.js', function() {
         FB.init({
-            appId: '150550038652128',
+            appId: '1164335503650956',
             cookie: true,
             xfbml: true,
             version: 'v2.6'
