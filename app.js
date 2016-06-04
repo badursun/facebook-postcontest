@@ -39,6 +39,7 @@ $(document).ready(function() {
                 }
                 if (access_token == "" || post_id == "") {
                     $("#sonuclar").html("Gerekli Bilgiler Girilmedi !");
+                    $.LoadingOverlay("hide");
                 } else {
                     getJsonFromAPI();
                 }
