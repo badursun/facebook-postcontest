@@ -66,7 +66,7 @@ function getAccessToken() {
     Request Facebook PostID  
 */
 function getPagePostID() {
-    var answer = prompt("Post ID Girin", "882918638503415");
+    var answer = prompt("Post ID Girin", "");
 
     if (answer != null) {
         post_id = answer;
